@@ -5,35 +5,38 @@ import Layout from '../../../components/layout';
 import Patient from '../../../ethereum/patient'
 
 
-class RequestIndex extends Component {
+class ReportIndex extends Component {
 
   static async getInitialProps(props) {
 
     const { address } = props.query;
     const patient = Patient(address);
-    const reportCount = await patient.methods.getReportscount().call();
-  
-    const requests = await Promise.all(
-      Array(parseInt(requestCount)).fill().map((element, index) =>{
-        return campaign.methods.requests(index).call()
+    const reportCount = await patient.methods.getReportsCount().call();
+    const reports = await Promise.all(
+      Array(parseInt(reportCount)).fill().map((element, index) =>{
+        return patient.methods.reports(index).call()
       })
     );
 
-    console.log(requests);
+    console.log(reports);
 
-    return { address, requests, requestCount, approversCount };
+    return { address, reports, reportCount };
   }
 
   renderRows() {
 
-    return this.props.requests.map((request, index) => {
-      return <RequestRow
-          key={index}
-          id={index}
-          request={request}
-          address={this.props.address}
-          approversCount={this.props.approversCount}
-        />
+    const { Row, Cell } = Table;
+    const { report, reportCount } = this.props;
+    return this.props.reports.map((report, index) => {
+      return (
+
+        <Row>
+          <Cell>{index}</Cell>
+          <Cell>{report.description}</Cell>
+          <Cell>{report.hashValue}</Cell>
+          <Cell>{reportCount}</Cell>
+        </Row>
+      );
     });
   }
   render() {
@@ -49,14 +52,23 @@ class RequestIndex extends Component {
           </a>
         </Link>
         <Table>
-          <Body>
-          //{this.renderRows()}
-          </Body>
-        </Table>
+                  <Header>
+                    <Row>
+                      <HeaderCell>ID</HeaderCell>
+                      <HeaderCell>Description</HeaderCell>
+                      <HeaderCell>Content Id</HeaderCell>
+                      <HeaderCell>View</HeaderCell>
+                    </Row>
+                  </Header>
+                  <Body>
+                    {this.renderRows()}
+                  </Body>
+                </Table>
+
         <div>Found {this.props.reportCount} reports.</div>
       </Layout>
     );
   }
 }
 
-export default RequestIndex;
+export default ReportIndex;
