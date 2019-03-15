@@ -37,21 +37,43 @@ import { Form, Button, Input, Message } from 'semantic-ui-react';
 import factory from '../../ethereum/factory';
 import web3 from '../../ethereum/web3';
 import { Router, Link } from '../../routes';
+import { resolve } from 'path';
+import { rejects } from 'assert';
 
 class PatientNew extends Component {
 
 	state = {
 		bloodGroup: '',
 		errorMessage: '',
-		loading: false
+		loading: false,
+		INVALID_ADDRESS:'0x0000000000000000000000000000000000000000'
 	};
 
-  	static async getInitialProps() {
-      const account = '0xE1ee5D018c5b7258Cd5415095af6773E3a8EC002'
-  		const patient = await factory.methods.patientContract(account).call();
-      console.log(patient);
-  		return {address: patient};
-  	}
+  	//static async getInitialProps() {
+	componentDidMount (){
+		  //const account = '0xE1ee5D018c5b7258Cd5415095af6773E3a8EC002'
+		  new Promise((resolve,reject)=>{
+			  resolve( web3.eth.getAccounts())
+		  }).then(accounts=>{
+			//console.log('accounts ', accounts)
+			new Promise((resolve,reject)=>{
+				resolve(factory.methods.patientContract(accounts[0]).call())
+			}).then(address=>{			
+				
+				if(address !== this.state.INVALID_ADDRESS){
+					Router.pushRoute(`/patient/${address}`);//Redirecting to the patient dashboard if the user has  already an account.
+				}
+				this.setState({address})
+			})
+		  })
+	  }
+
+	
+	redirectUser = async () => {
+		
+	}
+	  
+
 
 
   // test = async (event) => {
@@ -68,20 +90,30 @@ class PatientNew extends Component {
 		event.preventDefault();
 		this.setState({ loading: true, errorMessage: '' });
 		try {
-			const accounts = await web3.eth.getAccounts();
+			const accounts = await web3.eth.getAccounts();			
 			await factory.methods
 			.createPatient(this.state.bloodGroup)
 			.send({
 			from: accounts[0]
-		});
-    console.log(accounts[0]);
-		Router.pushRoute('/');
+			}).then( () => {
+				// const patient = await factory.methods.patientContract(accounts[0]).call();
+				// console.log("this returned the smart cotract function",patient);
+				new Promise((resolve,reject)=>{
+					resolve(factory.methods.patientContract(accounts[0]).call())
+				}).then(address=>{					
+					if(address !== this.state.INVALID_ADDRESS){
+						Router.pushRoute(`/patient/${address}`);//Redirecting to the patient dashboard if the user has  already an account.
+					}
+				})
+			})
+			
+			//Router.pushRoute('/');
+
 		} catch(err) {
 			this.setState({ errorMessage: err.message });
 		}
 		this.setState({ loading: false });
-
-	};
+	}
 
 	render() {
 
@@ -89,7 +121,7 @@ class PatientNew extends Component {
 
 			<Layout>
 				<h3>Create a Patient Contract</h3>
-        <Link route={`/patient/${this.props.address}`}>
+        <Link route={`/patient/${this.state.address}`}>
         		<a className="Item Button" floated="right">Patient Dashboard</a>
         </Link>
 				<Form onSubmit = {this.onSubmit} error={!!this.state.errorMessage}>
