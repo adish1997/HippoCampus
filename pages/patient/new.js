@@ -58,8 +58,8 @@ class PatientNew extends Component {
 			//console.log('accounts ', accounts)
 			new Promise((resolve,reject)=>{
 				resolve(factory.methods.patientContract(accounts[0]).call())
-			}).then(address=>{			
-				
+			}).then(address=>{
+
 				if(address !== this.state.INVALID_ADDRESS){
 					Router.pushRoute(`/patient/${address}`);//Redirecting to the patient dashboard if the user has  already an account.
 				}
@@ -68,11 +68,11 @@ class PatientNew extends Component {
 		  })
 	  }
 
-	
+
 	redirectUser = async () => {
-		
+
 	}
-	  
+
 
 
 
@@ -90,7 +90,7 @@ class PatientNew extends Component {
 		event.preventDefault();
 		this.setState({ loading: true, errorMessage: '' });
 		try {
-			const accounts = await web3.eth.getAccounts();			
+			const accounts = await web3.eth.getAccounts();
 			await factory.methods
 			.createPatient(this.state.bloodGroup)
 			.send({
@@ -100,13 +100,13 @@ class PatientNew extends Component {
 				// console.log("this returned the smart cotract function",patient);
 				new Promise((resolve,reject)=>{
 					resolve(factory.methods.patientContract(accounts[0]).call())
-				}).then(address=>{					
+				}).then(address=>{
 					if(address !== this.state.INVALID_ADDRESS){
 						Router.pushRoute(`/patient/${address}`);//Redirecting to the patient dashboard if the user has  already an account.
 					}
 				})
 			})
-			
+
 			//Router.pushRoute('/');
 
 		} catch(err) {
@@ -121,9 +121,6 @@ class PatientNew extends Component {
 
 			<Layout>
 				<h3>Create a Patient Contract</h3>
-        <Link route={`/patient/${this.state.address}`}>
-        		<a className="Item Button" floated="right">Patient Dashboard</a>
-        </Link>
 				<Form onSubmit = {this.onSubmit} error={!!this.state.errorMessage}>
 				 <Form.Field>
 				 	<label>Blood Group</label>
